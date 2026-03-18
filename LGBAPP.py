@@ -97,15 +97,15 @@ if lgbm_model:
                 with cols[i % 3]:
                     # 为每个特征添加中文说明和单位
                     if feature == 'albumin_max':
-                        label = "白蛋白最大值 (g/dL)"
+                        label = "白蛋白 (g/dL)"
                     elif feature == 'creatinine_max':
-                        label = "肌酐最大值 (mg/dL)"
+                        label = "肌酐(mg/dL)"
                     elif feature == 'inr_min':
-                        label = "INR最小值"
+                        label = "INR"
                     elif feature == 'pt_min':
-                        label = "PT最小值 (秒)"
+                        label = "PT(秒)"
                     elif feature == 'alt_max':
-                        label = "ALT最大值 (U/L)"
+                        label = "ALT (U/L)"
                     elif feature == 'fresh_frozen_plasma_input':
                         label = "新鲜冰冻血浆输入 (单位)"
                     elif feature == 'platelets_input':
