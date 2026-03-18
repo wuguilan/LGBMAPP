@@ -48,6 +48,25 @@ BINARY_FEATURES = [
     "vasopressin", "sedative", "cvc"
 ]
 
+# 特征英文名称（用于SHAP图）
+FEATURE_NAMES_EN = {
+    "vte_history": "VTE History",
+    "cancer": "Cancer",
+    "respiratory_failure": "Resp Failure",
+    "heart_failure": "Heart Failure",
+    "albumin_max": "Albumin",
+    "creatinine_max": "Creatinine",
+    "inr_min": "INR",
+    "pt_min": "PT",
+    "alt_max": "ALT",
+    "fresh_frozen_plasma_input": "FFP",
+    "platelets_input": "Platelets",
+    "rbw_input": "RBC",
+    "vasopressin": "Vasopressin",
+    "sedative": "Sedative",
+    "cvc": "CVC"
+}
+
 # 默认值设置
 DEFAULT_VALUES = {
     "albumin_max": 2.4,
@@ -66,35 +85,81 @@ st.markdown("---")
 
 # --- 用户输入界面 ---
 if lgbm_model:
-    with st.expander("点击此处输入/修改患者指标", expanded=True):
+    with st.expander("点击此处输入患者指标", expanded=True):
         input_data = {}
-        with st.form("vte_input_form"):
-            st.subheader("数值指标")
-            num_cols = st.columns(4)
+        
+        with st.form("input_form"):
+            st.subheader("📊 数值型指标")
+            
+            # 3列布局
+            cols = st.columns(3)
             for i, feature in enumerate(NUMERIC_FEATURES):
-                with num_cols[i % 4]:
+                with cols[i % 3]:
+                    # 为每个特征添加中文说明和单位
+                    if feature == 'albumin_max':
+                        label = "白蛋白最大值 (g/dL)"
+                    elif feature == 'creatinine_max':
+                        label = "肌酐最大值 (mg/dL)"
+                    elif feature == 'inr_min':
+                        label = "INR最小值"
+                    elif feature == 'pt_min':
+                        label = "PT最小值 (秒)"
+                    elif feature == 'alt_max':
+                        label = "ALT最大值 (U/L)"
+                    elif feature == 'fresh_frozen_plasma_input':
+                        label = "新鲜冰冻血浆输入 (单位)"
+                    elif feature == 'platelets_input':
+                        label = "血小板输入 (单位)"
+                    elif feature == 'rbw_input':
+                        label = "红细胞输入 (单位)"
+                    else:
+                        label = FEATURE_NAMES_EN.get(feature, feature)
+                    
                     input_data[feature] = st.number_input(
-                        label=feature,
-                        step=0.01,
-                        format="%.2f",
-                        value=DEFAULT_VALUES.get(feature, 0.0)
+                        label=label,
+                        min_value=0.0,
+                        max_value=100.0 if feature in ['albumin_max', 'creatinine_max'] else 1000.0,
+                        value=float(DEFAULT_VALUES.get(feature, 0.0)),
+                        step=0.1,
+                        format="%.1f",
+                        key=f"num_{feature}"
                     )
-            st.markdown("<br>", unsafe_allow_html=True)
-
-            st.subheader("二元指标 (是/否)")
+            
+            st.markdown("---")
+            st.subheader("✅ 二分类指标 (是/否)")
+            
+            # 4列布局
             bin_cols = st.columns(4)
             for i, feature in enumerate(BINARY_FEATURES):
                 with bin_cols[i % 4]:
+                    # 为二分类特征添加中文说明
+                    if feature == 'vte_history':
+                        label = "VTE病史"
+                    elif feature == 'cancer':
+                        label = "癌症"
+                    elif feature == 'respiratory_failure':
+                        label = "呼吸衰竭"
+                    elif feature == 'heart_failure':
+                        label = "心力衰竭"
+                    elif feature == 'vasopressin':
+                        label = "血管加压素"
+                    elif feature == 'sedative':
+                        label = "镇静剂"
+                    elif feature == 'cvc':
+                        label = "中心静脉导管"
+                    else:
+                        label = FEATURE_NAMES_EN.get(feature, feature)
+                    
                     value = st.radio(
-                        label=feature,
+                        label=label,
                         options=['否', '是'],
-                        key=f"radio_{feature}",
+                        key=f"bin_{feature}",
                         horizontal=True,
                         index=0
                     )
                     input_data[feature] = 1 if value == '是' else 0
-
-            submitted = st.form_submit_button("执行VTE风险预测")
+            
+            submitted = st.form_submit_button("🔮 预测VTE风险", type="primary", use_container_width=True)
 
     # --- 预测和结果展示 ---
     if submitted:
